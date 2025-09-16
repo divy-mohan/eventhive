@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     
     # Local apps
-    # Add your custom apps here
+    'events',  # Mini Event Tracker core app
 ]
 
 MIDDLEWARE = [
@@ -193,3 +193,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://0.0.0.0:5000",
 ]
+
+# Custom User Model
+AUTH_USER_MODEL = 'events.User'  # Use our custom User model instead of Django's default
