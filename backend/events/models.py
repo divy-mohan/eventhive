@@ -248,6 +248,14 @@ class Event(models.Model):
         help_text="Optional detailed description of the event."
     )
     
+    # Public sharing functionality
+    share_id = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True,
+        help_text="Unique identifier for public sharing of this event."
+    )
+    
     # Foreign key relationship to User
     user = models.ForeignKey(
         User,
