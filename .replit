@@ -1,6 +1,7 @@
-modules = ["python-3.11", "nodejs-20", "postgresql-16"]
+modules = ["python-3.11", "nodejs-20", "web"]
 [agent]
 integrations = ["python_database:1.0.0"]
+expertMode = true
 
 [nix]
 channel = "stable-25_05"
