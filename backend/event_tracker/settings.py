@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
     
@@ -167,14 +168,16 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-# CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React development server
-    "http://127.0.0.1:3000",
-    "http://0.0.0.0:5000",   # Replit frontend port
-]
-
+# CORS Settings for development (allow all origins)
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOW_CREDENTIALS = True
+
+# For production, use specific origins:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5000",
+#     "http://0.0.0.0:5000",
+#     # Add your production domain here
+# ]
 
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -190,9 +193,10 @@ CORS_ALLOW_HEADERS = [
 
 # Additional security settings for development
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
     "http://0.0.0.0:5000",
+    "https://*.replit.dev",  # For Replit preview URLs
 ]
 
 # Custom User Model
