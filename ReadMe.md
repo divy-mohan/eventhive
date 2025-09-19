@@ -12,7 +12,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5+-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3+-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 
-[🌟 Features](#-features) • [🚀 Quick Start](#-quick-start) • [🛠️ Tech Stack](#️-tech-stack) • [📱 Screenshots](#-screenshots) • [🎯 API Documentation](#-api-documentation)
+[🌟 Features](#-features) • [🚀 Quick Start](#-quick-start) • [🛠️ Tech Stack](#️-tech-stack) • [🎯 API Documentation](#-api-documentation)
 
 </div>
 
