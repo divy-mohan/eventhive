@@ -71,7 +71,7 @@ Make sure you have these installed:
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/divy-mohan/eventhive
 cd eventhive
 
 # Run the automated setup script
@@ -125,38 +125,6 @@ After running the script, open your browser to:
 🎯 ESLint              - Code quality
 💅 Prettier            - Code formatting
 ```
-
----
-
-## 📱 Screenshots
-
-### 🏠 Dashboard
-<div align="center">
-<img src="https://via.placeholder.com/800x500/667eea/ffffff?text=Beautiful+Dashboard+with+Gradient+Cards" alt="Dashboard" width="100%">
-</div>
-
-*Modern dashboard with gradient statistics cards, recent events, and quick actions*
-
-### 📋 Events List
-<div align="center">
-<img src="https://via.placeholder.com/800x500/764ba2/ffffff?text=Events+List+with+Search+%26+Filters" alt="Events List" width="100%">
-</div>
-
-*Responsive event cards with search, filtering, and beautiful animations*
-
-### 📝 Event Details
-<div align="center">
-<img src="https://via.placeholder.com/800x500/f093fb/ffffff?text=Event+Details+%26+Management" alt="Event Details" width="100%">
-</div>
-
-*Detailed event view with editing capabilities and sharing options*
-
-### 🎓 Interactive Tutorial
-<div align="center">
-<img src="https://via.placeholder.com/800x500/4facfe/ffffff?text=Interactive+Tutorial+System" alt="Tutorial" width="100%">
-</div>
-
-*Step-by-step guided tour for new users with visual highlights*
 
 ---
 
@@ -335,8 +303,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [Your Name]**
+**Built by Divya Mohan Singh (Vedmata Web Designing)**
 
-[⭐ Star this repo](https://github.com/your-username/eventhive) • [🐛 Report Bug](https://github.com/your-username/eventhive/issues) • [💡 Request Feature](https://github.com/your-username/eventhive/issues)
+[⭐ Star this repo](https://github.com/divy-mohan/eventhive) • [🐛 Report Bug](https://github.com/divy-mohan/eventhive/issues) • [💡 Request Feature](https://github.com/divy-mohan/eventhive/issues)
 
 </div>
