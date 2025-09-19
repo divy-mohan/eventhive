@@ -299,7 +299,7 @@ class Event(models.Model):
         Returns:
             bool: True if event is in the past, False otherwise
         """
-        return self.date_time < timezone.now()
+        return self.date_time and self.date_time < timezone.now()
     
     def clean(self):
         """
@@ -347,7 +347,11 @@ class Event(models.Model):
         This ensures that our custom validation in clean() is always
         executed when saving through the ORM.
         """
-        self.full_clean()
+        try:
+            self.full_clean()
+        except ValidationError as e:
+            # Re-raise ValidationError for proper handling
+            raise e
         super().save(*args, **kwargs)
 
 

@@ -133,6 +133,32 @@ export default function LoginPage() {
             </button>
           </div>
 
+          {/* Demo Credentials */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">Demo Account Available</h3>
+            <p className="text-xs text-gray-600 mb-3">You can create a new account or use these demo credentials for quick access:</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between bg-white rounded px-3 py-2 border">
+                <span className="text-sm text-gray-700 font-mono">vedmatawebdesigning@gmail.com</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText('vedmatawebdesigning@gmail.com')}
+                  className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+              <div className="flex items-center justify-between bg-white rounded px-3 py-2 border">
+                <span className="text-sm text-gray-700 font-mono">Mohan123#</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText('Mohan123#')}
+                  className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}

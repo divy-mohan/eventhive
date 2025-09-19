@@ -10,3 +10,5 @@ sqlparse==0.5.3
 typing_extensions==4.15.0
 tzdata==2025.2
 asgiref==3.9.1
+# Security enhancements
+django-ratelimit==4.1.0

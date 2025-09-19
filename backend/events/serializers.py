@@ -73,7 +73,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         """Validate password confirmation matches."""
-        if attrs['password'] != attrs['password_confirm']:
+        password = attrs.get('password')
+        password_confirm = attrs.get('password_confirm')
+        
+        if not password or not password_confirm:
+            raise serializers.ValidationError(
+                'Both password and password confirmation are required.'
+            )
+        
+        if password != password_confirm:
             raise serializers.ValidationError({
                 'password_confirm': 'Password confirmation does not match.'
             })

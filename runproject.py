@@ -168,7 +168,13 @@ def main():
     print("✅ Node.js found")
     
     # Setup backend
-    backend_success, python_exe = setup_backend()
+    backend_result = setup_backend()
+    if isinstance(backend_result, tuple):
+        backend_success, python_exe = backend_result
+    else:
+        backend_success = backend_result
+        python_exe = sys.executable
+    
     if not backend_success:
         print("❌ Backend setup failed")
         sys.exit(1)

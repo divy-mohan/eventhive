@@ -254,6 +254,12 @@ eventhive/
 
 ## 🔧 Development
 
+
+
+# Run the automated setup script
+cd eventhive
+python runproject.py
+
 ### 🛠️ Manual Setup (Alternative)
 
 If you prefer manual setup instead of using `runproject.py`:

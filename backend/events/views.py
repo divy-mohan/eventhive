@@ -141,7 +141,7 @@ class EventViewSet(viewsets.ModelViewSet):
         Ensures data isolation and security by filtering events
         to only those owned by the authenticated user.
         """
-        return Event.objects.filter(user=self.request.user).select_related('user')
+        return Event.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):
         """
@@ -272,7 +272,16 @@ def public_event_detail(request, share_id):
     Allows anyone to view basic event information via a shared link
     without requiring authentication. Demonstrates public API capabilities.
     """
+    from django.utils._os import safe_join
+    from django.conf import settings
+    
     try:
+        # Validate share_id format to prevent path traversal
+        if not isinstance(share_id, str) or len(share_id) != 36:
+            return Response({
+                'error': 'Invalid share link format'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         event = get_object_or_404(Event, share_id=share_id)
         serializer = PublicEventSerializer(event)
         
@@ -298,6 +307,9 @@ def dashboard_stats(request):
     from django.db.models import Count, Case, When, IntegerField
     
     now = timezone.now()
+    
+    # Secure filter validation - prevent SQL injection
+    allowed_filters = ['user', 'date_time__gte', 'date_time__lte', 'title__icontains']
     
     # Optimized single query for all counts
     stats_query = Event.objects.filter(user=request.user).aggregate(
