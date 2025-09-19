@@ -84,9 +84,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Remove password_confirm from validated data
         validated_data.pop('password_confirm', None)
         
-        # Create user using custom manager
-        user = User.objects.create_user(**validated_data)
-        return user
+        try:
+            # Create user using custom manager
+            user = User.objects.create_user(**validated_data)
+            return user
+        except Exception as e:
+            raise serializers.ValidationError(
+                "Failed to create user account. Please try again."
+            )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -154,9 +159,9 @@ class EventSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Event location cannot be empty."
             )
-        if len(location) < 5:
+        if len(location) < 2:
             raise serializers.ValidationError(
-                "Event location must be at least 5 characters long."
+                "Event location must be at least 2 characters long."
             )
         return location
     

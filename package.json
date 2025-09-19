@@ -1,18 +1,30 @@
 {
-  "name": "workspace",
+  "name": "event-tracker",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Mini Event Management System - Full Stack Application",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python manage.py runserver",
+    "dev:frontend": "cd frontend/event-tracker-ui && npm run dev",
+    "install:all": "cd backend && pip install -r requirements.txt && cd ../frontend/event-tracker-ui && npm install",
+    "build": "cd frontend/event-tracker-ui && npm run build",
+    "setup": "cd backend && python manage.py migrate && python manage.py collectstatic --noinput",
+    "test": "cd backend && python manage.py test && cd ../frontend/event-tracker-ui && npm run test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@vitejs/plugin-react": "^5.0.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "vite": "^7.1.5"
+  "keywords": [
+    "event-management",
+    "django",
+    "react",
+    "full-stack",
+    "web-application"
+  ],
+  "author": "Event Tracker Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
   }
 }

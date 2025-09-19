@@ -1,22 +1,12 @@
-/**
- * Authentication Context for user session management.
- * 
- * Provides authentication state, user data, and auth methods
- * throughout the Event Tracker application with React Context.
- * 
- * Author: Generated for Mini Event Tracker
- * Created: September 16, 2025
- */
-
+// Authentication context - manages user login state across the app
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI, isAuthenticated, clearTokens } from '../utils/api';
 import toast from 'react-hot-toast';
 
+// Create the auth context
 const AuthContext = createContext(null);
 
-/**
- * Hook to use authentication context
- */
+// Hook to access auth state from any component
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -25,42 +15,44 @@ export const useAuth = () => {
   return context;
 };
 
-/**
- * Authentication Provider component
- */
+// Main auth provider component
 export default function AuthProvider({ children }) {
+  // Track current user and loading state
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is authenticated on app load
+  // Check if user is already logged in when app starts
   useEffect(() => {
     const initAuth = async () => {
       if (isAuthenticated()) {
         try {
+          // Get user info from backend
           const response = await authAPI.getProfile();
           setUser(response.data);
         } catch (error) {
+          // Token might be expired, clear it
           console.error('Failed to load user profile:', error);
           clearTokens();
         }
       }
+      // Done checking, stop loading
       setIsLoading(false);
     };
 
     initAuth();
   }, []);
 
-  /**
-   * Login user with credentials
-   */
+  // Handle user login
   const login = async (credentials) => {
     try {
       setIsLoading(true);
       const { user } = await authAPI.login(credentials);
       setUser(user);
+      // Show welcome message
       toast.success(`Welcome back, ${user.first_name}!`);
       return { success: true };
     } catch (error) {
+      // Extract error message from API response
       const message = error?.response?.data?.message || 
                      error?.response?.data?.non_field_errors?.[0] ||
                      'Login failed. Please check your credentials.';

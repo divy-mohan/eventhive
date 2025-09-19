@@ -58,6 +58,9 @@ export default function LoginPage() {
     const result = await login(formData);
     if (result.success) {
       navigate('/dashboard');
+    } else {
+      // Error is already handled by AuthContext with toast
+      console.error('Login failed:', result.error);
     }
   };
 

@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure--3e688n#88(m9))ml$@j(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts for development
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']  # Allow all hosts for development
 
 
 # Application definition
@@ -87,14 +87,11 @@ WSGI_APPLICATION = 'event_tracker.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('PGDATABASE', default='event_tracker_db'),
-        'USER': config('PGUSER', default='postgres'),
-        'PASSWORD': config('PGPASSWORD', default=''),
-        'HOST': config('PGHOST', default='localhost'),
-        'PORT': config('PGPORT', default='5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 
 # Password validation
@@ -151,6 +148,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
 }
 
 # JWT Settings
@@ -169,7 +174,13 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings for development (allow all origins)
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost:3000",
+]  # For development only
 CORS_ALLOW_CREDENTIALS = True
 
 # For production, use specific origins:
@@ -196,7 +207,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5000",
     "http://127.0.0.1:5000",
     "http://0.0.0.0:5000",
-    "https://*.replit.dev",  # For Replit preview URLs
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 # Custom User Model

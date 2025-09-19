@@ -8,12 +8,15 @@
  * Created: September 16, 2025
  */
 
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import QueryProvider from './contexts/QueryProvider';
 import AuthProvider, { useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
+import Tutorial from './components/Tutorial';
+import TutorialButton from './components/TutorialButton';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -60,7 +63,18 @@ function PublicRoute({ children }) {
  * App content with routing
  */
 function AppContent() {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const tutorialCompleted = localStorage.getItem('tutorial-completed');
+      const tutorialSkipped = localStorage.getItem('tutorial-skipped');
+      if (!tutorialCompleted && !tutorialSkipped) {
+        setTimeout(() => setShowTutorial(true), 1000);
+      }
+    }
+  }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -131,6 +145,8 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
+      <Tutorial isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
+      {isAuthenticated && <TutorialButton onClick={() => setShowTutorial(true)} />}
     </div>
   );
 }

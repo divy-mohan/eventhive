@@ -80,17 +80,22 @@ def register_user(request):
     """
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
-        
-        # Generate tokens for the new user
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'message': 'User registered successfully',
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'user': UserProfileSerializer(user).data
-        }, status=status.HTTP_201_CREATED)
+        try:
+            user = serializer.save()
+            
+            # Generate tokens for the new user
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'User registered successfully',
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': UserProfileSerializer(user).data
+            }, status=status.HTTP_201_CREATED)
+        except Exception:
+            return Response({
+                'error': 'Registration failed. Please try again.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -188,9 +193,14 @@ class EventViewSet(viewsets.ModelViewSet):
         event = self.get_object()
         
         # Generate unique share ID if not exists
-        if not hasattr(event, 'share_id') or not event.share_id:
-            event.share_id = str(uuid.uuid4())
-            event.save(update_fields=['share_id'])
+        if not event.share_id:
+            try:
+                event.share_id = str(uuid.uuid4())
+                event.save(update_fields=['share_id'])
+            except Exception:
+                return Response({
+                    'error': 'Failed to generate share link'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         share_url = request.build_absolute_uri(
             f'/api/public/events/{event.share_id}/'
@@ -263,23 +273,17 @@ def public_event_detail(request, share_id):
     without requiring authentication. Demonstrates public API capabilities.
     """
     try:
-        # Note: We need to add share_id field to Event model
-        # For now, we'll use a simple approach with the event ID
-        event = get_object_or_404(Event, id=share_id)
+        event = get_object_or_404(Event, share_id=share_id)
         serializer = PublicEventSerializer(event)
         
         return Response({
             'event': serializer.data,
             'message': 'Public event details retrieved successfully'
         })
-    except Event.DoesNotExist:
+    except Exception:
         return Response({
             'error': 'Event not found or share link is invalid'
         }, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({
-            'error': 'Failed to retrieve event details'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -291,17 +295,29 @@ def dashboard_stats(request):
     Returns event counts and summary data for dashboard display,
     demonstrating data aggregation and business logic in the API.
     """
-    user_events = Event.objects.filter(user=request.user)
+    from django.db.models import Count, Case, When, IntegerField
+    
     now = timezone.now()
     
+    # Optimized single query for all counts
+    stats_query = Event.objects.filter(user=request.user).aggregate(
+        total_events=Count('id'),
+        upcoming_events=Count(Case(
+            When(date_time__gt=now, then=1),
+            output_field=IntegerField()
+        )),
+        past_events=Count(Case(
+            When(date_time__lt=now, then=1),
+            output_field=IntegerField()
+        ))
+    )
+    
+    # Get recent events separately
+    recent_events = Event.objects.filter(user=request.user).order_by('-created_at')[:5]
+    
     stats = {
-        'total_events': user_events.count(),
-        'upcoming_events': user_events.filter(date_time__gt=now).count(),
-        'past_events': user_events.filter(date_time__lt=now).count(),
-        'recent_events': EventListSerializer(
-            user_events.order_by('-created_at')[:5],
-            many=True
-        ).data
+        **stats_query,
+        'recent_events': EventListSerializer(recent_events, many=True).data
     }
     
     return Response(stats)

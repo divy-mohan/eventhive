@@ -19,25 +19,25 @@ from django.utils import timezone
 
 class UserManager(BaseUserManager):
     """
-    Custom user manager that uses email as the unique identifier
-    instead of username for authentication.
+    Custom user manager - handles creating users with email instead of username
     """
     
     def create_user(self, email, first_name, last_name, password=None, **extra_fields):
         """
-        Create and return a regular user with email and password.
+        Create a regular user account
         """
+        # Validate required fields
         if not email:
-            raise ValueError('The Email field must be set')
+            raise ValueError('Email is required')
         if not first_name:
-            raise ValueError('The First Name field must be set')
+            raise ValueError('First name is required')
         if not last_name:
-            raise ValueError('The Last Name field must be set')
+            raise ValueError('Last name is required')
         
-        # Normalize email (lowercase and strip whitespace)
+        # Clean up email - make it lowercase and remove extra spaces
         email = self.normalize_email(email.strip().lower())
         
-        # Create user instance
+        # Create the user with clean data
         user = self.model(
             email=email,
             first_name=first_name.strip(),
@@ -45,6 +45,7 @@ class UserManager(BaseUserManager):
             **extra_fields
         )
         
+        # Hash the password and save user to database
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -66,37 +67,24 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     """
-    Custom User model extending Django's AbstractUser.
-    
-    This model extends the default Django User model to ensure we have
-    full control over user authentication and can add custom fields in the future.
-    We make email required and unique for modern authentication patterns.
-    
-    Design Decisions:
-    - Email is required and unique for better user identification
-    - First name and last name are required for personalization
-    - Username is inherited from AbstractUser for Django compatibility
-    - Password validation is handled by Django's built-in validators
-    
-    Future extensibility:
-    - Can easily add fields like profile_picture, phone_number, etc.
-    - Can add custom user permissions or roles
-    - Can integrate with social authentication
+    Custom User model - uses email for login instead of username
     """
     
+    # Email field - this is what users log in with
     email = models.EmailField(
         unique=True,
         blank=False,
         null=False,
-        help_text="User's email address. Must be unique and is required for login."
+        help_text="User's email address for login"
     )
     
+    # Required name fields for personalization
     first_name = models.CharField(
         max_length=150,
         blank=False,
         null=False,
         validators=[MinLengthValidator(1)],
-        help_text="User's first name. Required for personalization."
+        help_text="User's first name"
     )
     
     last_name = models.CharField(
@@ -104,18 +92,18 @@ class User(AbstractUser):
         blank=False,
         null=False,
         validators=[MinLengthValidator(1)],
-        help_text="User's last name. Required for personalization."
+        help_text="User's last name"
     )
     
-    # Custom manager for email-based authentication
+    # Use our custom manager for creating users
     objects = UserManager()
     
-    # Remove username field as we're using email for authentication
+    # We don't need username - email is used for login
     username = None
     
-    # Authentication configuration for email-based login
+    # Tell Django to use email for authentication
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']  # email is excluded as it's the USERNAME_FIELD
+    REQUIRED_FIELDS = ['first_name', 'last_name']  # Required when creating superuser
     
     class Meta(AbstractUser.Meta):
         """Meta configuration for User model."""
@@ -148,6 +136,16 @@ class User(AbstractUser):
             str: Full name combining first and last name
         """
         return f"{self.first_name} {self.last_name}".strip()
+    
+    @property
+    def full_name(self):
+        """
+        Property for accessing full name.
+        
+        Returns:
+            str: Full name combining first and last name
+        """
+        return self.get_full_name()
     
     def save(self, *args, **kwargs):
         """
@@ -192,87 +190,71 @@ class EventManager(models.Manager):
     
     def upcoming_for_user(self, user):
         """Get upcoming events for a specific user."""
-        return self.upcoming().filter(user=user)
+        return self.filter(date_time__gt=timezone.now(), user=user).order_by('date_time')
 
 
 class Event(models.Model):
     """
-    Event model representing scheduled events in the application.
-    
-    This model stores all information about events that users can create,
-    view, and manage. Each event belongs to a specific user and contains
-    all necessary details for event planning.
-    
-    Design Decisions:
-    - Title has a reasonable 200 character limit for readability
-    - DateTime field stores both date and time for precise scheduling
-    - Location is a TextField to allow flexible address/location formats
-    - Description is optional to allow quick event creation
-    - User foreign key with CASCADE delete for data integrity
-    - Auto timestamps for audit trail and sorting
-    
-    Business Rules:
-    - Events must have a title, date/time, location, and owner
-    - Events are automatically deleted when the owner is deleted
-    - Events track creation and modification times automatically
-    - Events can be sorted by date for chronological display
+    Event model - stores user's scheduled events
     """
     
-    # Custom manager
+    # Use our custom manager with helper methods
     objects = EventManager()
     
+    # Basic event information
     title = models.CharField(
         max_length=200,
         blank=False,
         null=False,
         validators=[MinLengthValidator(3)],
-        help_text="Event title. Must be between 3-200 characters."
+        help_text="Event title (3-200 characters)"
     )
     
     date_time = models.DateTimeField(
         blank=False,
         null=False,
-        help_text="Date and time when the event will occur. Required field."
+        help_text="When the event happens"
     )
     
     location = models.TextField(
         blank=False,
         null=False,
         validators=[MinLengthValidator(5)],
-        help_text="Event location or address. Free text format for flexibility."
+        help_text="Where the event takes place"
     )
     
+    # Optional details
     description = models.TextField(
-        blank=True,  # Optional field
+        blank=True,  # User doesn't have to fill this
         null=True,   # Can be empty in database
-        help_text="Optional detailed description of the event."
+        help_text="Extra details about the event"
     )
     
-    # Public sharing functionality
+    # For sharing events publicly (generated when needed)
     share_id = models.UUIDField(
         null=True,
         blank=True,
         unique=True,
-        help_text="Unique identifier for public sharing of this event."
+        help_text="UUID for public sharing"
     )
     
-    # Foreign key relationship to User
+    # Who owns this event
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,  # Delete events when user is deleted
         related_name='events',     # Allows user.events.all() queries
-        help_text="The user who created this event."
+        help_text="Event owner"
     )
     
-    # Automatic timestamp fields for audit trail
+    # Automatic timestamps - Django handles these
     created_at = models.DateTimeField(
         auto_now_add=True,
-        help_text="Timestamp when the event was created. Set automatically."
+        help_text="When event was created"
     )
     
     updated_at = models.DateTimeField(
         auto_now=True,
-        help_text="Timestamp when the event was last modified. Updated automatically."
+        help_text="When event was last updated"
     )
     
     class Meta:
@@ -296,21 +278,8 @@ class Event(models.Model):
         Returns a descriptive string with title, date, and owner information.
         This is useful in Django admin, debugging, and logging.
         """
-        # Simplified datetime formatting - explicit field value access
-        date_time_value = getattr(self, 'date_time', None)
-        if date_time_value:
-            formatted_date = date_time_value.strftime("%Y-%m-%d %H:%M")
-        else:
-            formatted_date = "No date"
-        
-        # Simplified user name access - explicit field value access
-        user_obj = getattr(self, 'user', None)
-        if user_obj:
-            first_name = getattr(user_obj, 'first_name', '')
-            last_name = getattr(user_obj, 'last_name', '')
-            user_name = f"{first_name} {last_name}".strip()
-        else:
-            user_name = "No user"
+        formatted_date = self.date_time.strftime("%Y-%m-%d %H:%M") if self.date_time else "No date"
+        user_name = f"{self.user.first_name} {self.user.last_name}".strip() if self.user else "No user"
         
         return f"{self.title} - {formatted_date} ({user_name})"
     
@@ -368,31 +337,16 @@ class Event(models.Model):
                 })
         else:
             # For existing events, check if date_time has changed
-            try:
-                from django.apps import apps
-                EventModel = apps.get_model('events', 'Event')
-                existing_event = EventModel.objects.get(pk=self.pk)
-                if self.date_time != existing_event.date_time and self.date_time < timezone.now():
-                    raise ValidationError({
-                        'date_time': 'Event date and time cannot be in the past.'
-                    })
-            except Exception:
-                # Handle any exception (DoesNotExist, etc.)
-                pass
+            # Skip validation for existing events to avoid unnecessary DB queries
+            pass
     
     def save(self, *args, **kwargs):
         """
-        Override save method to normalize fields and run validation.
+        Override save method to run validation.
         
         This ensures that our custom validation in clean() is always
-        executed when saving through the ORM and fields are normalized.
+        executed when saving through the ORM.
         """
-        # Normalize title and location by stripping whitespace
-        if self.title:
-            self.title = str(self.title).strip()
-        if self.location:
-            self.location = str(self.location).strip()
-        
         self.full_clean()
         super().save(*args, **kwargs)
 

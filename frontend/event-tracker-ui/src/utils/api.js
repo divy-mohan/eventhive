@@ -1,67 +1,49 @@
-/**
- * API utility functions for the Event Tracker application.
- * 
- * Provides centralized API configuration, authentication handling,
- * and HTTP request functions with proper error handling and token management.
- * 
- * Author: Generated for Mini Event Tracker
- * Created: September 16, 2025
- */
-
+// API utilities - handles all communication with the backend
 import axios from 'axios';
 
-// API base URL - uses environment variable or defaults to localhost for development
+// Backend API URL - can be overridden with environment variable
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-// Create axios instance with default configuration
+// Main API client with default settings
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000, // Don't wait more than 10 seconds
 });
 
-// Token management
+// Token storage keys
 const TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
-/**
- * Get stored access token
- */
+// Get the current access token from storage
 export const getAccessToken = () => localStorage.getItem(TOKEN_KEY);
 
-/**
- * Get stored refresh token
- */
+// Get the refresh token from storage
 export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY);
 
-/**
- * Store authentication tokens
- */
+// Save both tokens to localStorage
 export const setTokens = (accessToken, refreshToken) => {
   localStorage.setItem(TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 };
 
-/**
- * Clear stored authentication tokens
- */
+// Remove all tokens (for logout)
 export const clearTokens = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 };
 
-/**
- * Check if user is authenticated
- */
+// Check if user has a valid token
 export const isAuthenticated = () => !!getAccessToken();
 
-// Request interceptor to add auth token
+// Automatically add auth token to all requests
 api.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
     if (token) {
+      // Add Bearer token to request headers
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -82,9 +64,12 @@ api.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
-            refresh: refreshToken,
+          const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
           });
+          const response = { data: await refreshResponse.json() };
           
           const { access } = response.data;
           setTokens(access, refreshToken);
@@ -174,7 +159,7 @@ export const eventsAPI = {
   /**
    * Update event
    */
-  updateEvent: (id, eventData) => api.patch(`/events/${id}/`, eventData),
+  updateEvent: (id, eventData) => api.put(`/events/${id}/`, eventData),
 
   /**
    * Delete event
@@ -204,4 +189,5 @@ export const dashboardAPI = {
 export const healthCheck = () => api.get('/health/');
 
 // Export configured axios instance for custom requests
+export { api };
 export default api;
