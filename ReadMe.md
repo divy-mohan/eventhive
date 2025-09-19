@@ -291,16 +291,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
-
-- **Django Team** - For the amazing web framework
-- **React Team** - For the powerful UI library
-- **Tailwind CSS** - For the utility-first CSS framework
-- **Heroicons** - For the beautiful icon set
-- **Vite** - For the lightning-fast build tool
-
----
-
 <div align="center">
 
 **Built by Divya Mohan Singh (Vedmata Web Designing)**
